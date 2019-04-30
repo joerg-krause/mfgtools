@@ -31,17 +31,17 @@ set(SOURCES
 	rominfo.cpp
 )
 
-set(generated_files_dir "${CMAKE_BINARY_DIR}/libuuu/gen")
-set(gitversion_h "${generated_files_dir}/gitversion.h")
-
-add_custom_command(
-	OUTPUT gitversion.h
-	PRE_BUILD
-	COMMAND mkdir -p ${generated_files_dir}
-	COMMAND sh -c 'cd ${CMAKE_CURRENT_SOURCE_DIR} && rm -f ${gitversion_h} && ./gen_ver.sh "${gitversion_h}.tmp" && mv -f "${gitversion_h}.tmp" "${gitversion_h}"'
-
+find_package(Git)
+add_custom_target(git_version
+	COMMAND ${CMAKE_COMMAND}
+	-D PROJECT_VERSION=${PROJECT_NAME}_${PROJECT_VERSION}
+	-D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+	-D INPUT_FILE=${CMAKE_CURRENT_SOURCE_DIR}/gitversion.h.in
+	-D OUTPUT_FILE=${CMAKE_CURRENT_SOURCE_DIR}/gitversion.h
+	-D GIT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/gen_ver.cmake
 )
-include_directories(${generated_files_dir})
 
 #add_library( uuc SHARED ${SOURCES} ))
 add_library( uuc_s STATIC ${SOURCES} )
+add_dependencies( uuc_s git_version )
