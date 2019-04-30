@@ -1,33 +1,42 @@
 language: c++
-
 matrix:
-    include:
-         
-        - os: osx
-          osx_image: xcode9.4
-          compiler: clang
-
-        - os: osx
-          osx_image: xcode9.4
-          compiler: gcc
-
-        - os: osx
-          osx_image: xcode10.1
-          compiler: clang
-
-        - os: osx
-          osx_image: xcode10.1
-          compiler: gcc
-          
+  include:
+  - os: osx
+    osx_image: xcode9.4
+    compiler: clang
+  - os: osx
+    osx_image: xcode9.4
+    compiler: gcc
+  - os: osx
+    osx_image: xcode10.1
+    compiler: clang
+  - os: osx
+    osx_image: xcode10.1
+    compiler: gcc
 addons:
-    homebrew:
-        update: true
-        brewfile: true
-        packages:
-            - libusb
-            - libzip
-            - zlib
-
+  homebrew:
+    update: true
+    brewfile: true
+    packages:
+    - libusb
+    - libzip
+    - zlib
 script:
-    - export PKG_CONFIG_PATH="/usr/local/opt/zlib/lib/pkgconfig"
-    - cmake . && make
+- export PKG_CONFIG_PATH="/usr/local/opt/zlib/lib/pkgconfig"
+- cmake . && make
+jobs:
+  include:
+  - stage: deploy
+    if: tag IS present
+    script: skip
+    before_deploy:
+    - ./gen_ver.sh $TRAVIS_TAG
+    deploy:
+      provider: releases
+      api_key:
+        secure: e8bBHcEDdhQIh0sa25CbcqbZIBuP0t6SsRJvp2qrd2m794QEv2pGoGsiollw9luefX11o6lAcP6DWEuiOHOnL3ctOdTj4jghJtJsKLu91oUYqJQ/2CYg6nbrQni4EpjcTeUbxPjXw3Mh7QiUyD04C1tpugeSPOky16Ip/SEF8EFpdTubKo4Yi0dfxpC09oULVYCEdoOWQk2enXV9/TJKWpFbOowMkFsC+u1W/Wg8KYh8G1SL5aQIKDOWjeqcPP4zHGlx0IUIEHw2rNNPmGe2SWdzm5NeOukKKy7uWGDqW2lDN6On1Yb2UknwUVoChaJQsGuvYriVLFgIfZ7IJJSQXdtAfB0xyPlTwl91DOG4h6DWGTH3awGwcDh8DdiT6GUejIR1+MDHuZAtXBg7D/H6gYfHIoZzr7BRhf8+oFxYpJ2rVUp7XRAciCHBjsdmYjQg4KiWkwAk6Y8HGZmv3lxZOHto9y9hMDa43xZcbfh9vHUSgBZllt7vVmz8+QqDfY1gGWPdy0oTthGBxHu/uBWGf5Lo2c5tIg7DYBb13fxoZndIraUysdFR4ezSuLeoT0XOQCZh0043p9lmmIn9LMHdW7WRFt3U+UV5rc233OeAbpya4jG4LG8Nw42IoONQ5eWvlH7U26PKT6hefKoIt7pfwoJcm8PgD/0XgTCJ+CP/5Dw=
+      file: $TRAVIS_TAG.tar.gz
+      overwrite: true
+      skip_cleanup: true
+      on:
+        tags: true
